@@ -1,21 +1,31 @@
+const WebSocket = require('ws');
+
+// Use Render's port or default to 10000
+const PORT = process.env.PORT || 10000;
+
+// This is the part that was missing or breaking:
+const wss = new WebSocket.Server({ port: PORT });
+
 wss.on('connection', (ws) => {
     console.log('Roblox Server Connected!');
 
     ws.on('message', (data) => {
         try {
-            // Parse the JSON string coming from Roblox
+            // Parse the JSON coming from Roblox (Username + IP)
             const messageData = JSON.parse(data.toString());
             
-            const username = messageData.username;
-            const ip = messageData.ip;
-
             console.log(`--- New Entry ---`);
-            console.log(`User: ${username}`);
-            console.log(`IP:   ${ip}`);
+            console.log(`User: ${messageData.username}`);
+            console.log(`IP:   ${messageData.ip}`);
             console.log(`-----------------`);
 
         } catch (err) {
-            console.log("Received non-JSON message:", data.toString());
+            // If it's not JSON, just print the raw text
+            console.log("Received:", data.toString());
         }
     });
+
+    ws.on('close', () => console.log('Roblox Server Disconnected'));
 });
+
+console.log(`WebSocket server is running on port ${PORT}`);
